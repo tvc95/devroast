@@ -10,6 +10,7 @@ import {
   LeaderboardHeader,
   LeaderboardRow,
 } from "@/components/home/leaderboard-preview";
+import { LeaderboardCodeCell } from "@/components/home/leaderboard-code-cell";
 
 function LeaderboardSkeleton() {
   return (
@@ -65,16 +66,7 @@ function LeaderboardContent() {
             </span>
           </LeaderboardCell>
           <LeaderboardCell className="flex-1">
-            <div className="flex flex-col gap-0.5">
-              {entry.code.split("\n").slice(0, 3).map((line, i) => (
-                <span
-                  key={i}
-                  className="font-mono text-[12px] text-[var(--text-primary)] truncate max-w-[300px]"
-                >
-                  {line}
-                </span>
-              ))}
-            </div>
+            <LeaderboardCodeCell code={entry.code} language={entry.language} />
           </LeaderboardCell>
           <LeaderboardCell className="w-24">
             <span className="font-mono text-[12px] text-[var(--text-secondary)]">
