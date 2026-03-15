@@ -5,6 +5,7 @@ import { codeToHtml } from "shiki";
 
 const langMap: Record<string, string> = {
   JavaScript: "javascript",
+  javascript: "javascript",
   Python: "python",
   Bash: "bash",
   Java: "java",
