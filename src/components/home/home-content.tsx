@@ -1,11 +1,14 @@
-import { Suspense } from "react";
+"use client";
+
+import { useState, Suspense } from "react";
 import {
   ActionsBar,
   ActionsBarSubmit,
   ActionsBarToggle,
 } from "@/components/home/actions-bar";
-import { CodeInputWrapper } from "@/components/home/code-input-wrapper";
-import { FooterStats } from "@/components/home/footer-stats";
+import { CodeInput } from "@/components/home/code-input";
+import { FooterStats, FooterStatsItem } from "@/components/home/footer-stats";
+import { FooterStatsContent } from "@/components/home/footer-stats-content";
 import {
   Leaderboard,
   LeaderboardCell,
@@ -14,10 +17,6 @@ import {
   LeaderboardHeader,
   LeaderboardRow,
 } from "@/components/home/leaderboard-preview";
-import { caller } from "@/trpc/server";
-import NumberFlow from "@number-flow/react";
-
-export const dynamic = "force-dynamic";
 
 const leaderboardData = [
   {
@@ -63,22 +62,16 @@ function FooterStatsSkeleton() {
   );
 }
 
-function FooterStatsWithData({ stats }: { stats: { totalRoasts: number; avgScore: number } }) {
+function FooterStatsWrapper() {
   return (
-    <>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        <NumberFlow value={stats.totalRoasts} /> codes roasted
-      </span>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">·</span>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        avg score: <NumberFlow value={stats.avgScore} format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }} />/10
-      </span>
-    </>
+    <Suspense fallback={<FooterStatsSkeleton />}>
+      <FooterStatsContent />
+    </Suspense>
   );
 }
 
-export default async function HomePage() {
-  const stats = await caller.getStats();
+export function HomeContent() {
+  const [submitEnabled, setSubmitEnabled] = useState(true);
 
   return (
     <main className="flex min-h-[calc(100vh-56px)] flex-col items-center bg-[var(--bg-page)] px-10 pt-8">
@@ -96,19 +89,19 @@ export default async function HomePage() {
         </div>
 
         {/* Code Input */}
-        <CodeInputWrapper onSubmitEnabled={() => {}} />
+        <CodeInput onSubmitEnabled={setSubmitEnabled} />
 
         {/* Actions Bar */}
         <ActionsBar>
           <ActionsBarToggle>roast mode</ActionsBarToggle>
-          <ActionsBarSubmit disabled={false}>
+          <ActionsBarSubmit disabled={!submitEnabled}>
             $ roast_my_code
           </ActionsBarSubmit>
         </ActionsBar>
 
-        {/* Footer Stats - fetched on server */}
+        {/* Footer Stats */}
         <FooterStats>
-          <FooterStatsWithData stats={stats} />
+          <FooterStatsWrapper />
         </FooterStats>
 
         {/* Spacer */}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/layout/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TRPCProvider } from "@/trpc/client";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -23,8 +24,10 @@ export default function RootLayout({
     <html lang="en" className={`${jetbrainsMono.variable} dark`}>
       <body className="font-sans antialiased">
         <ThemeProvider>
-          <Navbar />
-          {children}
+          <TRPCProvider>
+            <Navbar />
+            {children}
+          </TRPCProvider>
         </ThemeProvider>
       </body>
     </html>
