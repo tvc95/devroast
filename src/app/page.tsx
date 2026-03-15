@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { FooterStats } from "@/components/home/footer-stats";
+import { FooterStatsContent } from "@/components/home/footer-stats-content";
 import {
   Leaderboard,
   LeaderboardCell,
@@ -9,7 +9,6 @@ import {
   LeaderboardRow,
 } from "@/components/home/leaderboard-preview";
 import { caller } from "@/trpc/server";
-import NumberFlow from "@number-flow/react";
 import { HomeInteractive } from "@/components/home/home-interactive";
 
 export const dynamic = "force-dynamic";
@@ -43,35 +42,6 @@ const leaderboardData = [
   },
 ];
 
-function FooterStatsSkeleton() {
-  return (
-    <div className="flex items-center justify-center gap-6">
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        <span className="inline-block w-12 animate-pulse rounded bg-[var(--text-tertiary)]/20">0000</span>{" "}
-        codes roasted
-      </span>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">·</span>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        avg score: <span className="inline-block w-8 animate-pulse rounded bg-[var(--text-tertiary)]/20">0.0</span>/10
-      </span>
-    </div>
-  );
-}
-
-function FooterStatsWithData({ stats }: { stats: { totalRoasts: number; avgScore: number } }) {
-  return (
-    <>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        <NumberFlow value={stats.totalRoasts} /> codes roasted
-      </span>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">·</span>
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        avg score: <NumberFlow value={stats.avgScore} format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }} />/10
-      </span>
-    </>
-  );
-}
-
 export default async function HomePage() {
   const stats = await caller.getStats();
 
@@ -93,9 +63,12 @@ export default async function HomePage() {
         {/* Code Input + Actions Bar */}
         <HomeInteractive />
 
-        {/* Footer Stats - fetched on server */}
+        {/* Footer Stats - fetched on server, animated with NumberFlow */}
         <FooterStats>
-          <FooterStatsWithData stats={stats} />
+          <FooterStatsContent
+            initialTotalRoasts={stats.totalRoasts}
+            initialAvgScore={stats.avgScore}
+          />
         </FooterStats>
 
         {/* Spacer */}

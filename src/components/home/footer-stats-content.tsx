@@ -1,27 +1,36 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import NumberFlow from "@number-flow/react";
-import { trpc } from "@/trpc/client";
 
-export function FooterStatsContent() {
-  const { data } = trpc.getStats.useQuery();
+export function FooterStatsContent({
+  initialTotalRoasts = 0,
+  initialAvgScore = 0,
+}: {
+  initialTotalRoasts?: number;
+  initialAvgScore?: number;
+}) {
+  const [totalRoasts, setTotalRoasts] = useState(initialTotalRoasts);
+  const [avgScore, setAvgScore] = useState(initialAvgScore);
 
-  if (!data) {
-    return (
-      <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        loading...
-      </span>
-    );
-  }
+  useEffect(() => {
+    setTotalRoasts(initialTotalRoasts);
+    setAvgScore(initialAvgScore);
+  }, [initialTotalRoasts, initialAvgScore]);
 
   return (
     <>
       <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        <NumberFlow value={data.totalRoasts} /> codes roasted
+        <NumberFlow value={totalRoasts} /> codes roasted
       </span>
       <span className="font-mono text-[12px] text-[var(--text-tertiary)]">·</span>
       <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        avg score: <NumberFlow value={data.avgScore} format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }} />/10
+        avg score:{" "}
+        <NumberFlow
+          value={avgScore}
+          format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+        />
+        /10
       </span>
     </>
   );
