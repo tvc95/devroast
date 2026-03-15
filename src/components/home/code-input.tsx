@@ -16,7 +16,10 @@ export interface CodeInputProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   value?: string;
   onChange?: (value: string) => void;
+  onSubmitEnabled?: (enabled: boolean) => void;
 }
+
+const MAX_CODE_LENGTH = 2000;
 
 const SUPPORTED_LANGUAGES = [
   { id: "auto", name: "Auto-detect" },
@@ -92,6 +95,7 @@ function detectByHeuristics(code: string): string | null {
 export function CodeInput({
   value: controlledValue,
   onChange,
+  onSubmitEnabled,
   className,
   ...props
 }: CodeInputProps) {
@@ -107,6 +111,11 @@ export function CodeInput({
 
   const isControlled = controlledValue !== undefined;
   const currentValue = isControlled ? controlledValue : internalValue;
+  const isOverLimit = currentValue.length > MAX_CODE_LENGTH;
+
+  useEffect(() => {
+    onSubmitEnabled?.(!isOverLimit);
+  }, [isOverLimit, onSubmitEnabled]);
 
   useEffect(() => {
     createHighlighter({
@@ -216,16 +225,25 @@ export function CodeInput({
        * ✅ FIX: O container externo não tem mais overflow-y-auto nem scrollTop state.
        *    O scroll agora vive inteiramente dentro de CodeEditor.
        */}
-      <div className="flex h-[360px] w-[780px]">
-        <CodeEditor
-          value={currentValue}
-          onChange={handleChange}
-          lineCount={lines.length}
-          highlightedHtmlDark={highlightedHtmlDark}
-          highlightedHtmlLight={highlightedHtmlLight}
-          isLoading={isLoading}
-          theme={theme}
-        />
+      <div className="flex flex-col">
+        <div className="flex h-[360px] w-[780px]">
+          <CodeEditor
+            value={currentValue}
+            onChange={handleChange}
+            lineCount={lines.length}
+            highlightedHtmlDark={highlightedHtmlDark}
+            highlightedHtmlLight={highlightedHtmlLight}
+            isLoading={isLoading}
+            theme={theme}
+          />
+        </div>
+        <div
+          className={`flex h-6 w-[780px] items-center justify-end border-t border-[var(--border-primary)] px-3 font-mono text-[10px] ${
+            isOverLimit ? "text-[var(--accent-red)]" : "text-[var(--text-tertiary)]"
+          }`}
+        >
+          {currentValue.length} / {MAX_CODE_LENGTH}
+        </div>
       </div>
     </div>
   );

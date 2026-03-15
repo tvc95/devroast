@@ -45,15 +45,17 @@ export function ActionsBarToggle({ children }: ActionsBarToggleProps) {
 export interface ActionsBarSubmitProps
   extends HTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
+  disabled?: boolean;
 }
 
 export function ActionsBarSubmit({
   children,
   className,
+  disabled,
   ...props
 }: ActionsBarSubmitProps) {
   return (
-    <Button className={className} {...props}>
+    <Button className={className} disabled={disabled} {...props}>
       {children || "$ roast_my_code"}
     </Button>
   );

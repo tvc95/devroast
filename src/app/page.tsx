@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   ActionsBar,
   ActionsBarSubmit,
@@ -48,6 +51,8 @@ const leaderboardData = [
 ];
 
 export default function HomePage() {
+  const [submitEnabled, setSubmitEnabled] = useState(true);
+
   return (
     <main className="flex min-h-[calc(100vh-56px)] flex-col items-center bg-[var(--bg-page)] px-10 pt-8">
       <div className="flex w-full max-w-[960px] flex-col items-center gap-8">
@@ -64,12 +69,14 @@ export default function HomePage() {
         </div>
 
         {/* Code Input */}
-        <CodeInput />
+        <CodeInput onSubmitEnabled={setSubmitEnabled} />
 
         {/* Actions Bar */}
         <ActionsBar>
           <ActionsBarToggle>roast mode</ActionsBarToggle>
-          <ActionsBarSubmit>$ roast_my_code</ActionsBarSubmit>
+          <ActionsBarSubmit disabled={!submitEnabled}>
+            $ roast_my_code
+          </ActionsBarSubmit>
         </ActionsBar>
 
         {/* Footer Stats */}
