@@ -102,6 +102,7 @@ export function CodeInput({
   const [highlightedHtmlLight, setHighlightedHtmlLight] = useState("");
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
   const { theme } = useTheme();
 
   const isControlled = controlledValue !== undefined;
@@ -133,11 +134,9 @@ export function CodeInput({
   }, []);
 
   const detectLanguage = useCallback((code: string): string => {
-    // First, try our heuristics for Java and C#
     const heuristicResult = detectByHeuristics(code);
     if (heuristicResult) return heuristicResult;
 
-    // Fallback to highlight.js
     const result = hljs.highlightAuto(code, AUTO_DETECT_LANG_IDS);
     return result.language || "plaintext";
   }, []);
@@ -161,12 +160,12 @@ export function CodeInput({
         const lang = currentLanguage === "auto" ? "plaintext" : currentLanguage;
 
         const htmlDark = highlighter.codeToHtml(currentValue, {
-          lang: lang,
+          lang,
           theme: "vesper",
         });
 
         const htmlLight = highlighter.codeToHtml(currentValue, {
-          lang: lang,
+          lang,
           theme: "github-light",
         });
 
@@ -196,10 +195,6 @@ export function CodeInput({
     onChange?.(newValue);
   };
 
-  const handleLanguageChange = (newLang: string) => {
-    setSelectedLanguage(newLang);
-  };
-
   const lines = currentValue.split("\n");
 
   return (
@@ -214,14 +209,18 @@ export function CodeInput({
         languages={SUPPORTED_LANGUAGES}
         selectedLanguage={selectedLanguage}
         detectedLanguage={selectedLanguage === "auto" ? detectedLanguage : null}
-        onLanguageChange={handleLanguageChange}
+        onLanguageChange={setSelectedLanguage}
         isLoading={isLoading}
       />
+      {/*
+       * ✅ FIX: O container externo não tem mais overflow-y-auto nem scrollTop state.
+       *    O scroll agora vive inteiramente dentro de CodeEditor.
+       */}
       <div className="flex h-[360px] w-[780px]">
-        <LineNumbers lineCount={lines.length} />
         <CodeEditor
           value={currentValue}
           onChange={handleChange}
+          lineCount={lines.length}
           highlightedHtmlDark={highlightedHtmlDark}
           highlightedHtmlLight={highlightedHtmlLight}
           isLoading={isLoading}
@@ -277,21 +276,12 @@ function CodeHeader({
   );
 }
 
-function LineNumbers({ lineCount }: { lineCount: number }) {
-  return (
-    <div className="flex w-12 flex-col items-end border-r border-[var(--border-primary)] bg-[var(--bg-surface)] py-3 pr-2 font-mono text-[12px] leading-6 text-[var(--text-tertiary)]">
-      {Array.from({ length: Math.max(lineCount, 16) }, (_, i) => (
-        <span key={String(i + 1)}>{i + 1}</span>
-      ))}
-    </div>
-  );
-}
-
 type Theme = "light" | "dark";
 
 interface CodeEditorProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  lineCount: number;
   highlightedHtmlDark: string;
   highlightedHtmlLight: string;
   isLoading: boolean;
@@ -301,71 +291,119 @@ interface CodeEditorProps {
 function CodeEditor({
   value,
   onChange,
+  lineCount,
   highlightedHtmlDark,
   highlightedHtmlLight,
   isLoading,
   theme,
 }: CodeEditorProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRefDark = useRef<HTMLDivElement>(null);
   const highlightRefLight = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback(() => {
-    if (textareaRef.current) {
-      if (highlightRefDark.current) {
-        highlightRefDark.current.scrollTop = textareaRef.current.scrollTop;
-        highlightRefDark.current.scrollLeft = textareaRef.current.scrollLeft;
-      }
-      if (highlightRefLight.current) {
-        highlightRefLight.current.scrollTop = textareaRef.current.scrollTop;
-        highlightRefLight.current.scrollLeft = textareaRef.current.scrollLeft;
-      }
+    if (!scrollRef.current) return;
+    const { scrollTop, scrollLeft } = scrollRef.current;
+
+    if (highlightRefDark.current) {
+      highlightRefDark.current.scrollTop = scrollTop;
+      highlightRefDark.current.scrollLeft = scrollLeft;
+    }
+    if (highlightRefLight.current) {
+      highlightRefLight.current.scrollTop = scrollTop;
+      highlightRefLight.current.scrollLeft = scrollLeft;
     }
   }, []);
 
   return (
     <div className="relative flex-1 overflow-hidden">
-      {/* Dark theme layer - always rendered, controlled by opacity */}
+      {/*
+       * ✅ SCROLL CONTAINER ÚNICO — números de linha + conteúdo vivem aqui.
+       *    Um único overflow-auto garante sincronização nativa pelo browser.
+       */}
       <div
-        ref={highlightRefDark}
-        className={`absolute inset-0 overflow-auto whitespace-pre-wrap break-words p-3 pl-4 font-mono text-[12px] leading-6 ${
-          theme === "dark" ? "opacity-100" : "opacity-0"
-        }`}
-        aria-hidden="true"
-      >
-        {isLoading ? (
-          <pre className="text-[var(--text-tertiary)]">{value}</pre>
-        ) : highlightedHtmlDark ? (
-          <div dangerouslySetInnerHTML={{ __html: highlightedHtmlDark }} />
-        ) : (
-          <pre className="text-[var(--text-primary)]">{value}</pre>
-        )}
-      </div>
-      {/* Light theme layer - always rendered, controlled by opacity */}
-      <div
-        ref={highlightRefLight}
-        className={`absolute inset-0 overflow-auto whitespace-pre-wrap break-words p-3 pl-4 font-mono text-[12px] leading-6 ${
-          theme === "light" ? "opacity-100" : "opacity-0"
-        }`}
-        aria-hidden="true"
-      >
-        {isLoading ? (
-          <pre className="text-[var(--text-tertiary)]">{value}</pre>
-        ) : highlightedHtmlLight ? (
-          <div dangerouslySetInnerHTML={{ __html: highlightedHtmlLight }} />
-        ) : (
-          <pre className="text-[var(--text-primary)]">{value}</pre>
-        )}
-      </div>
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={onChange}
+        ref={scrollRef}
+        className="absolute inset-0 overflow-auto"
         onScroll={handleScroll}
-        className="absolute inset-0 flex-1 resize-none bg-transparent py-3 pl-3 pr-4 font-mono text-[12px] leading-6 text-transparent caret-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none"
-        placeholder="// paste your code here..."
-        spellCheck={false}
-      />
+      >
+        {/*
+         * w-max min-w-full: o container cresce com o conteúdo horizontalmente,
+         * permitindo scroll horizontal real, mas ocupa no mínimo 100% da largura.
+         */}
+        <div className="flex min-h-full w-max min-w-full font-mono text-[12px] leading-6 bg-[var(--bg-input)]">
+          {/* Números de linha: sticky left-0 */}
+          <div
+            className="sticky left-0 z-10 flex w-12 flex-shrink-0 flex-col items-end
+                        border-r border-[var(--border-primary)] bg-[var(--bg-surface)]
+                        py-3 pr-2 text-[var(--text-tertiary)] select-none"
+          >
+            {Array.from({ length: lineCount }, (_, i) => (
+              <span key={i + 1} className="block h-6 leading-6">
+                {i + 1}
+              </span>
+            ))}
+          </div>
+
+          <div className="relative flex-1">
+            {/* Dark highlight layer */}
+            <div
+              ref={highlightRefDark}
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 overflow-visible
+                          whitespace-pre font-mono text-[12px] leading-6 py-3 pl-4 pr-4
+                          ${theme === "dark" ? "opacity-100" : "opacity-0"}`}
+            >
+              {isLoading ? (
+                <pre className="text-[var(--text-tertiary)]">{value}</pre>
+              ) : highlightedHtmlDark ? (
+                <div dangerouslySetInnerHTML={{ __html: highlightedHtmlDark }} />
+              ) : (
+                <pre className="text-[var(--text-primary)]">{value}</pre>
+              )}
+            </div>
+
+            {/* Light highlight layer */}
+            <div
+              ref={highlightRefLight}
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 overflow-visible
+                          whitespace-pre font-mono text-[12px] leading-6 py-3 pl-4 pr-4
+                          ${theme === "light" ? "opacity-100" : "opacity-0"}`}
+            >
+              {isLoading ? (
+                <pre className="text-[var(--text-tertiary)]">{value}</pre>
+              ) : highlightedHtmlLight ? (
+                <div dangerouslySetInnerHTML={{ __html: highlightedHtmlLight }} />
+              ) : (
+                <pre className="text-[var(--text-primary)]">{value}</pre>
+              )}
+            </div>
+
+            <style>{`
+              .code-textarea::selection {
+                background: ${theme === "dark"
+                  ? "rgba(255,255,255,0.15)"
+                  : "rgba(0,0,0,0.12)"};
+                color: transparent;
+              }
+            `}</style>
+            
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={onChange}
+              className="code-textarea absolute inset-0 resize-none bg-transparent
+                         py-3 pl-4 pr-4 text-transparent caret-[var(--text-primary)]
+                         placeholder:text-[var(--text-tertiary)] focus:outline-none
+                         overflow-hidden whitespace-pre font-mono text-[12px] leading-6"
+              placeholder="// paste your code here..."
+              spellCheck={false}
+              style={{ minWidth: "100%", minHeight: "100%", width: "max-content" }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
