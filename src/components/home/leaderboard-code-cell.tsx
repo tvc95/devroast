@@ -21,14 +21,13 @@ const langMap: Record<string, string> = {
   Rust: "rust",
 };
 
-function ChevronIcon({ className }: { className?: string }) {
+function ChevronIcon() {
   return (
     <svg
-      width="12"
-      height="12"
+      width="10"
+      height="10"
       viewBox="0 0 10 10"
       fill="none"
-      className={className}
     >
       <path
         d="M3.5 9L7.5 5L3.5 1"
@@ -49,21 +48,34 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
   const hasMoreLines = lines.length > maxLines;
 
   useEffect(() => {
-    const highlight = (codeToHighlight: string) => {
-      codeToHtml(codeToHighlight, { lang, theme: "vesper" }).then(setHtml);
-    };
+    const isDark = document.documentElement.classList.contains("dark");
+    const theme = isDark ? "vesper" : "github-light";
+    
+    const codeToHighlight = isOpen ? code : lines.slice(0, maxLines).join("\n");
+    
+    codeToHtml(codeToHighlight, { lang, theme }).then(setHtml);
 
-    highlight(code);
-  }, [code, lang]);
+    const observer = new MutationObserver(() => {
+      const updatedIsDark = document.documentElement.classList.contains("dark");
+      const updatedTheme = updatedIsDark ? "vesper" : "github-light";
+      codeToHtml(codeToHighlight, { lang, theme: updatedTheme }).then(setHtml);
+    });
 
-  const visibleCode = isOpen ? code : lines.slice(0, maxLines).join("\n");
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, [code, lang, isOpen, maxLines, lines]);
+
   const hiddenLines = lines.length - maxLines;
 
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex w-full min-w-0 overflow-hidden rounded bg-[var(--bg-surface)]">
         <div className="flex w-10 flex-shrink-0 flex-col items-end border-r border-[var(--border-primary)] px-2 py-2">
-          {visibleCode.split("\n").map((_, i) => (
+          {lines.slice(0, isOpen ? lines.length : maxLines).map((_, i) => (
             <span
               key={i}
               className="font-mono text-[11px] leading-5 text-[var(--text-tertiary)]"
@@ -80,7 +92,7 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
             />
           ) : (
             <pre className="font-mono text-[11px] leading-5 text-[var(--text-primary)] whitespace-pre-wrap">
-              {visibleCode}
+              {isOpen ? code : lines.slice(0, maxLines).join("\n")}
             </pre>
           )}
         </div>
@@ -89,9 +101,11 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
       {hasMoreLines && (
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1 self-start rounded px-2 py-1 font-mono text-[11px] text-[var(--text-tertiary)] hover:bg-[var(--bg-surface)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)]"
+          className="group flex items-center gap-1 self-start rounded px-2 py-1 font-mono text-[11px] text-[var(--text-tertiary)] hover:bg-[var(--bg-surface)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)]"
         >
-          <ChevronIcon className={`transition-transform duration-200 ease-out ${isOpen ? "rotate-90" : ""}`} />
+          <span className={`transition-transform duration-200 ease-out ${isOpen ? "rotate-90" : ""}`}>
+            <ChevronIcon />
+          </span>
           {isOpen ? "show less" : `show ${hiddenLines} more line${hiddenLines > 1 ? "s" : ""}`}
         </button>
       )}
