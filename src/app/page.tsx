@@ -1,45 +1,9 @@
 import { FooterStats } from "@/components/home/footer-stats";
 import { FooterStatsContent } from "@/components/home/footer-stats-content";
-import {
-  Leaderboard,
-  LeaderboardCell,
-  LeaderboardFooter,
-  LeaderboardFooterLink,
-  LeaderboardHeader,
-  LeaderboardRow,
-} from "@/components/home/leaderboard-preview";
+import { LeaderboardPreview } from "@/components/home/leaderboard-preview-client";
 import { HomeInteractive } from "@/components/home/home-interactive";
 
 export const dynamic = "force-dynamic";
-
-const leaderboardData = [
-  {
-    rank: 1,
-    score: 1.2,
-    code: [
-      'eval(prompt("enter code"))',
-      "document.write(response)",
-      "// trust the user lol",
-    ],
-    lang: "javascript",
-  },
-  {
-    rank: 2,
-    score: 1.8,
-    code: [
-      "if (x == true) { return true; }",
-      "else if (x == false) { return false; }",
-      "else { return !false; }",
-    ],
-    lang: "typescript",
-  },
-  {
-    rank: 3,
-    score: 2.1,
-    code: ["SELECT * FROM users WHERE 1=1", "-- TODO: add authentication"],
-    lang: "sql",
-  },
-];
 
 export default function HomePage() {
   return (
@@ -82,45 +46,7 @@ export default function HomePage() {
           <p className="font-mono text-[13px] text-[var(--text-tertiary)]">
             {`//`} the worst code on the internet, ranked by shame
           </p>
-          <Leaderboard>
-            <LeaderboardHeader />
-            {leaderboardData.map((entry) => (
-              <LeaderboardRow key={entry.rank}>
-                <LeaderboardCell className="w-12">
-                  <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-                    {entry.rank}
-                  </span>
-                </LeaderboardCell>
-                <LeaderboardCell className="w-16">
-                  <span className="font-mono text-[12px] font-bold text-[var(--accent-red)]">
-                    {entry.score.toFixed(1)}
-                  </span>
-                </LeaderboardCell>
-                <LeaderboardCell className="flex-1">
-                  <div className="flex flex-col gap-0.5">
-                    {entry.code.map((line) => (
-                      <span
-                        key={line}
-                        className="font-mono text-[12px] text-[var(--text-primary)]"
-                      >
-                        {line}
-                      </span>
-                    ))}
-                  </div>
-                </LeaderboardCell>
-                <LeaderboardCell className="w-24">
-                  <span className="font-mono text-[12px] text-[var(--text-secondary)]">
-                    {entry.lang}
-                  </span>
-                </LeaderboardCell>
-              </LeaderboardRow>
-            ))}
-            <LeaderboardFooter>
-              <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-                showing top 3 of 2,847 · <LeaderboardFooterLink />
-              </span>
-            </LeaderboardFooter>
-          </Leaderboard>
+          <LeaderboardPreview />
         </div>
 
         {/* Bottom Spacer */}
