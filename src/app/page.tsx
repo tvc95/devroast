@@ -1,10 +1,4 @@
 import { Suspense } from "react";
-import {
-  ActionsBar,
-  ActionsBarSubmit,
-  ActionsBarToggle,
-} from "@/components/home/actions-bar";
-import { CodeInputWrapper } from "@/components/home/code-input-wrapper";
 import { FooterStats } from "@/components/home/footer-stats";
 import {
   Leaderboard,
@@ -16,6 +10,7 @@ import {
 } from "@/components/home/leaderboard-preview";
 import { caller } from "@/trpc/server";
 import NumberFlow from "@number-flow/react";
+import { HomeInteractive } from "@/components/home/home-interactive";
 
 export const dynamic = "force-dynamic";
 
@@ -95,16 +90,8 @@ export default async function HomePage() {
           </p>
         </div>
 
-        {/* Code Input */}
-        <CodeInputWrapper onSubmitEnabled={() => {}} />
-
-        {/* Actions Bar */}
-        <ActionsBar>
-          <ActionsBarToggle>roast mode</ActionsBarToggle>
-          <ActionsBarSubmit disabled={false}>
-            $ roast_my_code
-          </ActionsBarSubmit>
-        </ActionsBar>
+        {/* Code Input + Actions Bar */}
+        <HomeInteractive />
 
         {/* Footer Stats - fetched on server */}
         <FooterStats>
