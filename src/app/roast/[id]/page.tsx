@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CodeBlock } from "@/app/leaderboard/code-block";
+import { ScoreRing } from "@/components/ui/score-ring";
 
 export const metadata: Metadata = {
   title: "Roast Result | DevRoast",
@@ -85,37 +86,6 @@ const roastResult = {
     ],
   },
 };
-
-function ScoreRing({ score }: { score: number }) {
-  const getScoreColor = (s: number) => {
-    if (s < 4) return "var(--accent-red)";
-    if (s < 7) return "var(--accent-amber)";
-    return "var(--accent-green)";
-  };
-
-  return (
-    <div className="relative flex h-[180px] w-[180px] items-center justify-center">
-      <div className="absolute inset-0 rounded-full border-4 border-[var(--border-primary)]" />
-      <div
-        className="absolute inset-0 rounded-full border-4"
-        style={{
-          borderColor: getScoreColor(score),
-          borderTopColor: "transparent",
-          borderRightColor: score > 2.5 ? getScoreColor(score) : "transparent",
-          borderBottomColor: score > 5 ? getScoreColor(score) : "transparent",
-          borderLeftColor: score > 7.5 ? getScoreColor(score) : "transparent",
-          transform: "rotate(-45deg)",
-        }}
-      />
-      <div className="flex flex-col items-center">
-        <span className="font-mono text-[48px] font-bold" style={{ color: getScoreColor(score) }}>
-          {score}
-        </span>
-        <span className="font-mono text-[16px] text-[var(--text-tertiary)]">/10</span>
-      </div>
-    </div>
-  );
-}
 
 function IssueCard({
   issue,
@@ -231,8 +201,8 @@ export default function RoastResultPage() {
     <main className="flex min-h-screen flex-col bg-[var(--bg-page)]">
       <div className="flex flex-col gap-10 px-20 py-10">
         {/* Score Hero */}
-        <div className="flex items-center justify-center gap-12">
-          <ScoreRing score={roastResult.score} />
+        <div className="flex flex-col items-center gap-12 sm:flex-row sm:justify-center sm:gap-12">
+          <ScoreRing score={roastResult.score} size="lg" />
 
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
@@ -257,12 +227,13 @@ export default function RoastResultPage() {
                 {roastResult.lineCount} lines
               </span>
             </div>
-
-            <button className="flex items-center gap-1.5 rounded-sm border border-[var(--border-primary)] px-4 py-2">
-              <span className="font-mono text-[12px] text-[var(--text-primary)]">
-                $ share_roast
-              </span>
-            </button>
+            <div>
+              <button className="flex items-center gap-1.5 rounded-sm border border-[var(--border-primary)] px-4 py-2">
+                <span className="font-mono text-[12px] text-[var(--text-primary)]">
+                  $ share_roast
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -62,7 +62,7 @@ export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
             </linearGradient>
           </defs>
         </svg>
-        <ScoreCenter score={score} maxScore={maxScore} />
+        <ScoreCenter score={score} maxScore={maxScore} size={size} />
       </div>
     );
   },
@@ -70,13 +70,25 @@ export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
 
 ScoreRing.displayName = "ScoreRing";
 
-function ScoreCenter({ score, maxScore }: { score: number; maxScore: number }) {
+function ScoreCenter({ score, maxScore, size = "md" }: { score: number; maxScore: number; size?: "sm" | "md" | "lg" }) {
+  const textSize = {
+    sm: "text-3xl",
+    md: "text-5xl md:text-4xl",
+    lg: "text-5xl lg:text-7xl",
+  }[size];
+
+  const labelSize = {
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-base",
+  }[size];
+
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center">
-      <span className="font-mono text-[48px] font-bold leading-none text-[var(--text-primary)]">
+      <span className={`font-mono font-bold leading-none text-[var(--text-primary)] ${textSize}`}>
         {score.toFixed(1)}
       </span>
-      <span className="font-mono text-base font-normal leading-none text-[var(--text-tertiary)]">
+      <span className={`font-mono font-normal leading-none text-[var(--text-tertiary)] ${labelSize}`}>
         /{maxScore}
       </span>
     </div>
