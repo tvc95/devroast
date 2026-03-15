@@ -2,21 +2,20 @@
 
 import { useState, useEffect } from "react";
 import NumberFlow from "@number-flow/react";
+import { trpc } from "@/trpc/client";
 
-export function FooterStatsContent({
-  initialTotalRoasts = 0,
-  initialAvgScore = 0,
-}: {
-  initialTotalRoasts?: number;
-  initialAvgScore?: number;
-}) {
-  const [totalRoasts, setTotalRoasts] = useState(initialTotalRoasts);
-  const [avgScore, setAvgScore] = useState(initialAvgScore);
+export function FooterStatsContent() {
+  const { data } = trpc.getStats.useQuery();
+  
+  const [totalRoasts, setTotalRoasts] = useState(0);
+  const [avgScore, setAvgScore] = useState(0);
 
   useEffect(() => {
-    setTotalRoasts(initialTotalRoasts);
-    setAvgScore(initialAvgScore);
-  }, [initialTotalRoasts, initialAvgScore]);
+    if (data) {
+      setTotalRoasts(data.totalRoasts);
+      setAvgScore(data.avgScore);
+    }
+  }, [data]);
 
   return (
     <>

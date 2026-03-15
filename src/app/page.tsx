@@ -8,7 +8,6 @@ import {
   LeaderboardHeader,
   LeaderboardRow,
 } from "@/components/home/leaderboard-preview";
-import { caller } from "@/trpc/server";
 import { HomeInteractive } from "@/components/home/home-interactive";
 
 export const dynamic = "force-dynamic";
@@ -42,9 +41,7 @@ const leaderboardData = [
   },
 ];
 
-export default async function HomePage() {
-  const stats = await caller.getStats();
-
+export default function HomePage() {
   return (
     <main className="flex min-h-[calc(100vh-56px)] flex-col items-center bg-[var(--bg-page)] px-10 pt-8">
       <div className="flex w-full max-w-[960px] flex-col items-center gap-8">
@@ -63,12 +60,9 @@ export default async function HomePage() {
         {/* Code Input + Actions Bar */}
         <HomeInteractive />
 
-        {/* Footer Stats - fetched on server, animated with NumberFlow */}
+        {/* Footer Stats - animated with NumberFlow */}
         <FooterStats>
-          <FooterStatsContent
-            initialTotalRoasts={stats.totalRoasts}
-            initialAvgScore={stats.avgScore}
-          />
+          <FooterStatsContent />
         </FooterStats>
 
         {/* Spacer */}
