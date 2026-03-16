@@ -48,41 +48,37 @@ const SYSTEM_PROMPT_ROAST = `You are a brutal code reviewer who roasts terrible 
   ]
 }`;
 
-function parseJsonWithRetry(
-  text: string,
-  maxRetries: number,
-): RoastAnalysis | null {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) continue;
+function tryParseAnalysis(text: string): RoastAnalysis | null {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
 
-      const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[0]);
 
-      if (
-        typeof parsed.score !== "number" ||
-        !parsed.verdict ||
-        !parsed.roastQuote ||
-        !parsed.suggestedCode ||
-        !Array.isArray(parsed.issues)
-      ) {
-        continue;
-      }
+    if (
+      typeof parsed.score !== "number" ||
+      !parsed.verdict ||
+      !parsed.roastQuote ||
+      !parsed.suggestedCode ||
+      !Array.isArray(parsed.issues)
+    ) {
+      return null;
+    }
 
-      return {
-        score: Math.max(0, Math.min(10, parsed.score)),
-        verdict: parsed.verdict,
-        roastQuote: parsed.roastQuote,
-        suggestedCode: parsed.suggestedCode,
-        items: parsed.issues.map((item: unknown) => ({
-          severity: (item as { severity: Severity }).severity || "warning",
-          title: (item as { title: string }).title || "Issue",
-          description: (item as { description: string }).description || "",
-        })),
-      };
-    } catch {}
+    return {
+      score: Math.max(0, Math.min(10, parsed.score)),
+      verdict: parsed.verdict,
+      roastQuote: parsed.roastQuote,
+      suggestedCode: parsed.suggestedCode,
+      items: parsed.issues.map((item: unknown) => ({
+        severity: (item as { severity: Severity }).severity || "warning",
+        title: (item as { title: string }).title || "Issue",
+        description: (item as { description: string }).description || "",
+      })),
+    };
+  } catch {
+    return null;
   }
-  return null;
 }
 
 export async function generateRoastAnalysis(
@@ -98,7 +94,7 @@ export async function generateRoastAnalysis(
     prompt: `Language: ${language}\n\nCode:\n${code}`,
   });
 
-  const parsed = parseJsonWithRetry(text, 2);
+  const parsed = tryParseAnalysis(text);
 
   if (!parsed) {
     throw new Error("Failed to parse AI response");
