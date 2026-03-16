@@ -22,22 +22,32 @@ const langMap: Record<string, string> = {
 };
 
 export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellProps) {
-  const [darkHtml, setDarkHtml] = useState("");
-  const [lightHtml, setLightHtml] = useState("");
+  const [html, setHtml] = useState("");
   const lang = langMap[language] || "javascript";
   const lines = code.split("\n");
   const visibleLines = lines.slice(0, maxLines);
-  const codeToHighlight = visibleLines.join("\n");
 
   useEffect(() => {
-    Promise.all([
-      codeToHtml(codeToHighlight, { lang, theme: "vesper" }),
-      codeToHtml(codeToHighlight, { lang, theme: "github-light" }),
-    ]).then(([dark, light]) => {
-      setDarkHtml(dark);
-      setLightHtml(light);
+    const isDark = document.documentElement.classList.contains("dark");
+    const theme = isDark ? "vesper" : "github-light";
+    
+    const codeToHighlight = visibleLines.join("\n");
+    
+    codeToHtml(codeToHighlight, { lang, theme }).then(setHtml);
+
+    const observer = new MutationObserver(() => {
+      const updatedIsDark = document.documentElement.classList.contains("dark");
+      const updatedTheme = updatedIsDark ? "vesper" : "github-light";
+      codeToHtml(codeToHighlight, { lang, theme: updatedTheme }).then(setHtml);
     });
-  }, [codeToHighlight, lang]);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, [code, lang, visibleLines]);
 
   return (
     <div className="flex w-full min-w-0 overflow-hidden rounded bg-[var(--bg-surface)]">
@@ -51,19 +61,17 @@ export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellP
           </span>
         ))}
       </div>
-      <div className="relative flex-1 overflow-x-auto px-3 py-2">
-        <div className="dark:[&_pre]:!bg-transparent dark:[&_pre]:!p-0 dark:[&_code]:!font-mono dark:[&_code]:!text-[11px] dark:[&_code]:!leading-5">
+      <div className="flex-1 overflow-x-auto px-3 py-2">
+        {html ? (
           <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 overflow-visible whitespace-pre font-mono text-[11px] leading-5 opacity-0 dark:opacity-100 transition-opacity"
-            dangerouslySetInnerHTML={{ __html: darkHtml }}
+            className="[&_pre]:!bg-transparent [&_pre]:!p-0 [&_code]:!font-mono [&_code]:!text-[11px] [&_code]:!leading-5"
+            dangerouslySetInnerHTML={{ __html: html }}
           />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 overflow-visible whitespace-pre font-mono text-[11px] leading-5 opacity-100 dark:opacity-0 transition-opacity"
-            dangerouslySetInnerHTML={{ __html: lightHtml }}
-          />
-        </div>
+        ) : (
+          <pre className="font-mono text-[11px] leading-5 text-[var(--text-primary)] whitespace-pre-wrap">
+            {visibleLines.join("\n")}
+          </pre>
+        )}
       </div>
     </div>
   );
