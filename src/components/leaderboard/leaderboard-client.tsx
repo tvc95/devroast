@@ -51,9 +51,7 @@ function LeaderboardContent() {
           <div className="flex h-12 items-center justify-between border-b border-[var(--border-primary)] px-5">
             <div className="flex items-center gap-4">
               <span
-                className={`font-mono text-lg font-bold ${
-                  index < 3 ? "text-[var(--accent-red)]" : "text-[var(--text-secondary)]"
-                }`}
+                className={`font-mono text-lg font-bold text-[var(--accent-amber)]`}
               >
                 #{index + 1}
               </span>
