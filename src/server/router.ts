@@ -1,10 +1,14 @@
 import { createTRPCRouter, baseProcedure } from "./index";
 import { db } from "@/db";
 import { roasts, analysisItems } from "@/db/schema";
-import { eq, asc, count, avg } from "drizzle-orm";
+import { eq, asc, count, avg, gte, and } from "drizzle-orm";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { generateRoastAnalysis } from "./analysis";
 import { generateDiff } from "./utils/diff";
+
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hora
 
 const createRoastInput = z.object({
   code: z.string().min(1).max(5000),
@@ -46,7 +50,26 @@ export const appRouter = createTRPCRouter({
 
   createRoast: baseProcedure
     .input(createRoastInput)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+
+      const [{ recentCount }] = await db
+        .select({ recentCount: count() })
+        .from(roasts)
+        .where(
+          and(
+            eq(roasts.ip, ctx.ip),
+            gte(roasts.createdAt, windowStart),
+          ),
+        );
+
+      if (recentCount >= RATE_LIMIT_MAX) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `rate limit exceeded — max ${RATE_LIMIT_MAX} roasts per hour`,
+        });
+      }
+
       const analysis = await generateRoastAnalysis(
         input.code,
         input.language,
@@ -66,6 +89,7 @@ export const appRouter = createTRPCRouter({
           verdict: analysis.verdict,
           roastQuote: analysis.roastQuote,
           suggestedFix: diff,
+          ip: ctx.ip,
         })
         .returning();
 

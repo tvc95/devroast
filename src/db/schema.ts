@@ -33,9 +33,13 @@ export const roasts = pgTable(
     verdict: verdictEnum().notNull(),
     roastQuote: text(),
     suggestedFix: text(),
+    ip: varchar({ length: 45 }),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [index("roasts_score_idx").on(table.score)],
+  (table) => [
+    index("roasts_score_idx").on(table.score),
+    index("roasts_ip_created_at_idx").on(table.ip, table.createdAt),
+  ],
 );
 
 export const analysisItems = pgTable("analysis_items", {
