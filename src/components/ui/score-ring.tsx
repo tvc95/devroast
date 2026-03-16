@@ -70,11 +70,11 @@ export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
 
 ScoreRing.displayName = "ScoreRing";
 
-function ScoreCenter({ score, maxScore, size = "md" }: { score: number; maxScore: number; size?: "sm" | "md" | "lg" }) {
+function ScoreCenter({ score, maxScore, size = "lg" }: { score: number; maxScore: number; size?: "sm" | "md" | "lg" }) {
   const textSize = {
     sm: "text-3xl",
     md: "text-5xl md:text-4xl",
-    lg: "text-5xl lg:text-7xl",
+    lg: "text-5xl lg:text-6x1",
   }[size];
 
   const labelSize = {

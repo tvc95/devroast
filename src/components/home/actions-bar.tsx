@@ -1,6 +1,6 @@
 "use client";
 
-import { type HTMLAttributes, type ReactNode, useState } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
@@ -25,18 +25,24 @@ export function ActionsBar({ children, className, ...props }: ActionsBarProps) {
 
 export interface ActionsBarToggleProps {
   children?: ReactNode;
+  pressed?: boolean;
+  onPressedChange?: (pressed: boolean) => void;
 }
 
-export function ActionsBarToggle({ children }: ActionsBarToggleProps) {
-  const [roastMode, setRoastMode] = useState(true);
-
+export function ActionsBarToggle({
+  children,
+  pressed = true,
+  onPressedChange,
+}: ActionsBarToggleProps) {
   return (
     <div className="flex items-center gap-4">
-      <Toggle pressed={roastMode} onPressedChange={setRoastMode}>
+      <Toggle pressed={pressed} onPressedChange={onPressedChange}>
         {children || "roast mode"}
       </Toggle>
       <span className="font-mono text-[12px] text-[var(--text-tertiary)]">
-        {`//`} maximum sarcasm enabled
+        {pressed
+          ? "// maximum sarcasm enabled"
+          : "// constructive feedback mode"}
       </span>
     </div>
   );

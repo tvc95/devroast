@@ -17,6 +17,9 @@ export interface CodeInputProps
   value?: string;
   onChange?: (value: string) => void;
   onSubmitEnabled?: (enabled: boolean) => void;
+  language?: string;
+  onLanguageChange?: (language: string) => void;
+  onDetectedLanguageChange?: (language: string) => void;
 }
 
 const MAX_CODE_LENGTH = 2000;
@@ -85,21 +88,36 @@ export function CodeInput({
   onChange,
   onSubmitEnabled,
   className,
+  language: controlledLanguage,
+  onLanguageChange,
+  onDetectedLanguageChange,
   ...props
 }: CodeInputProps) {
   const [internalValue, setInternalValue] = useState(SAMPLE_CODE);
-  const [selectedLanguage, setSelectedLanguage] = useState("auto");
+  const [internalLanguage, setInternalLanguage] = useState("auto");
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   const [highlightedHtmlDark, setHighlightedHtmlDark] = useState("");
   const [highlightedHtmlLight, setHighlightedHtmlLight] = useState("");
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const { theme } = useTheme();
 
   const isControlled = controlledValue !== undefined;
+  const isLanguageControlled = controlledLanguage !== undefined;
   const currentValue = isControlled ? controlledValue : internalValue;
+  const selectedLanguage = isLanguageControlled
+    ? controlledLanguage
+    : internalLanguage;
   const isOverLimit = currentValue.length > MAX_CODE_LENGTH;
+
+  const handleLanguageChange = (lang: string) => {
+    if (isLanguageControlled) {
+      onLanguageChange?.(lang);
+    } else {
+      setInternalLanguage(lang);
+    }
+  };
 
   useEffect(() => {
     onSubmitEnabled?.(!isOverLimit);
@@ -181,8 +199,14 @@ export function CodeInput({
     if (selectedLanguage === "auto" && currentValue) {
       const detected = detectLanguage(currentValue);
       setDetectedLanguage(detected);
+      onDetectedLanguageChange?.(detected);
     }
-  }, [currentValue, selectedLanguage, detectLanguage]);
+  }, [
+    currentValue,
+    selectedLanguage,
+    detectLanguage,
+    onDetectedLanguageChange,
+  ]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
@@ -206,7 +230,7 @@ export function CodeInput({
         languages={SUPPORTED_LANGUAGES}
         selectedLanguage={selectedLanguage}
         detectedLanguage={selectedLanguage === "auto" ? detectedLanguage : null}
-        onLanguageChange={setSelectedLanguage}
+        onLanguageChange={handleLanguageChange}
         isLoading={isLoading}
       />
       {/*
@@ -227,7 +251,9 @@ export function CodeInput({
         </div>
         <div
           className={`flex h-6 w-[780px] items-center justify-end border-t border-[var(--border-primary)] px-3 font-mono text-[10px] ${
-            isOverLimit ? "text-[var(--accent-red)]" : "text-[var(--text-tertiary)]"
+            isOverLimit
+              ? "text-[var(--accent-red)]"
+              : "text-[var(--text-tertiary)]"
           }`}
         >
           {currentValue.length} / {MAX_CODE_LENGTH}
@@ -363,7 +389,9 @@ function CodeEditor({
               {isLoading ? (
                 <pre className="text-[var(--text-tertiary)]">{value}</pre>
               ) : highlightedHtmlDark ? (
-                <div dangerouslySetInnerHTML={{ __html: highlightedHtmlDark }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: highlightedHtmlDark }}
+                />
               ) : (
                 <pre className="text-[var(--text-primary)]">{value}</pre>
               )}
@@ -380,7 +408,9 @@ function CodeEditor({
               {isLoading ? (
                 <pre className="text-[var(--text-tertiary)]">{value}</pre>
               ) : highlightedHtmlLight ? (
-                <div dangerouslySetInnerHTML={{ __html: highlightedHtmlLight }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: highlightedHtmlLight }}
+                />
               ) : (
                 <pre className="text-[var(--text-primary)]">{value}</pre>
               )}
@@ -388,13 +418,15 @@ function CodeEditor({
 
             <style>{`
               .code-textarea::selection {
-                background: ${theme === "dark"
-                  ? "rgba(255,255,255,0.15)"
-                  : "rgba(0,0,0,0.12)"};
+                background: ${
+                  theme === "dark"
+                    ? "rgba(255,255,255,0.15)"
+                    : "rgba(0,0,0,0.12)"
+                };
                 color: transparent;
               }
             `}</style>
-            
+
             <textarea
               ref={textareaRef}
               value={value}
@@ -405,7 +437,11 @@ function CodeEditor({
                          overflow-hidden whitespace-pre font-mono text-[12px] leading-6"
               placeholder="// paste your code here..."
               spellCheck={false}
-              style={{ minWidth: "100%", minHeight: "100%", width: "max-content" }}
+              style={{
+                minWidth: "100%",
+                minHeight: "100%",
+                width: "max-content",
+              }}
             />
           </div>
         </div>

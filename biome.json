@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["drizzle/**"]
+    "experimentalScannerIgnores": ["drizzle/**"]
   },
   "formatter": {
     "enabled": true,
