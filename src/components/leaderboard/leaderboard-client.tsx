@@ -46,7 +46,7 @@ function LeaderboardContent() {
         <Link
           key={entry.id}
           href={`/roast/${entry.id}`}
-          className="group flex flex-col rounded-sm border border-[var(--border-primary)] bg-[var(--bg-surface)] transition-colors hover:border-[var(--accent-red)]"
+          className="group flex flex-col rounded-sm border border-[var(--border-primary)] transition-colors hover:border-[var(--accent-red)]"
         >
           <div className="flex h-12 items-center justify-between border-b border-[var(--border-primary)] px-5">
             <div className="flex items-center gap-4">

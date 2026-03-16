@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { codeToHtml } from "shiki";
 
 interface CodeCellProps {
@@ -24,21 +24,42 @@ const langMap: Record<string, string> = {
 export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellProps) {
   const [html, setHtml] = useState("");
   const lang = langMap[language] || "javascript";
-  const lines = code.split("\n");
-  const visibleLines = lines.slice(0, maxLines);
+
+  // Memoize o código visível como string estável
+  const visibleCode = code.split("\n").slice(0, maxLines).join("\n");
+  const visibleLines = visibleCode.split("\n");
+
+  // Ref para cancelar highlight desatualizado
+  const abortRef = useRef(false);
+
+  const highlight = async (code: string, theme: string) => {
+    abortRef.current = true; // cancela qualquer highlight anterior em voo
+    const cancelled = abortRef.current;
+    abortRef.current = false;
+
+    const result = await codeToHtml(code, { lang, theme });
+
+    // Só atualiza se este highlight ainda é o mais recente
+    if (!cancelled) {
+      setHtml(result);
+    }
+  };
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    const theme = isDark ? "vesper" : "github-light";
-    
-    const codeToHighlight = visibleLines.join("\n");
-    
-    codeToHtml(codeToHighlight, { lang, theme }).then(setHtml);
+    let cancelled = false;
+
+    const getTheme = () =>
+      document.documentElement.classList.contains("dark") ? "vesper" : "github-light";
+
+    const run = async (theme: string) => {
+      const result = await codeToHtml(visibleCode, { lang, theme });
+      if (!cancelled) setHtml(result); // ← nunca limpa antes de ter o resultado
+    };
+
+    run(getTheme());
 
     const observer = new MutationObserver(() => {
-      const updatedIsDark = document.documentElement.classList.contains("dark");
-      const updatedTheme = updatedIsDark ? "vesper" : "github-light";
-      codeToHtml(codeToHighlight, { lang, theme: updatedTheme }).then(setHtml);
+      run(getTheme());
     });
 
     observer.observe(document.documentElement, {
@@ -46,17 +67,17 @@ export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellP
       attributeFilter: ["class"],
     });
 
-    return () => observer.disconnect();
-  }, [code, lang, visibleLines]);
+    return () => {
+      cancelled = true; // evita setHtml de promises antigas
+      observer.disconnect();
+    };
+  }, [visibleCode, lang]); // ← string estável, sem loop
 
   return (
     <div className="flex w-full min-w-0 overflow-hidden rounded bg-[var(--bg-surface)]">
       <div className="flex w-10 flex-shrink-0 flex-col items-end border-r border-[var(--border-primary)] px-2 py-2">
         {visibleLines.map((_, i) => (
-          <span
-            key={i}
-            className="font-mono text-[11px] leading-6 text-[var(--text-tertiary)]"
-          >
+          <span key={i} className="font-mono text-[11px] leading-6 text-[var(--text-tertiary)]">
             {i + 1}
           </span>
         ))}
@@ -69,7 +90,7 @@ export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellP
           />
         ) : (
           <pre className="font-mono text-[11px] leading-5 text-[var(--text-primary)] whitespace-pre-wrap">
-            {visibleLines.join("\n")}
+            {visibleCode}
           </pre>
         )}
       </div>
