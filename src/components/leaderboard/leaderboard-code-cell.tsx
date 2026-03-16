@@ -55,7 +55,7 @@ export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellP
         {visibleLines.map((_, i) => (
           <span
             key={i}
-            className="font-mono text-[11px] leading-5 text-[var(--text-tertiary)]"
+            className="font-mono text-[11px] leading-6 text-[var(--text-tertiary)]"
           >
             {i + 1}
           </span>
