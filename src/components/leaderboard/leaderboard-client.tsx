@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { trpc } from "@/trpc/client";
-import { LeaderboardCodeCell } from "@/components/home/leaderboard-code-cell";
+import { LeaderboardCodeCell } from "@/components/leaderboard/leaderboard-code-cell";
 
 function LeaderboardSkeleton() {
   return (
