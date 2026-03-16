@@ -1,10 +1,9 @@
-// @ts-nocheck
-import { createTRPCRouter, baseProcedure } from "./index";
-import { db } from "@/db";
-import { roasts, analysisItems } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { asc, avg, count, eq } from "drizzle-orm";
 import { z } from "zod";
+import { db } from "@/db";
+import { analysisItems, roasts } from "@/db/schema";
 import { generateRoastAnalysis } from "./analysis";
+import { baseProcedure, createTRPCRouter } from "./index";
 import { generateDiff } from "./utils/diff";
 
 const createRoastInput = z.object({
@@ -15,15 +14,16 @@ const createRoastInput = z.object({
 
 export const appRouter = createTRPCRouter({
   getStats: baseProcedure.query(async () => {
-    const result = await db.select().from(roasts);
-    const totalRoasts = result.length;
-    const avgScore = result.length > 0 
-      ? result.reduce((sum, r) => sum + (r.score || 0), 0) / result.length 
-      : 0;
+    const [result] = await db
+      .select({
+        totalRoasts: count(),
+        avgScore: avg(roasts.score),
+      })
+      .from(roasts);
 
     return {
-      totalRoasts,
-      avgScore,
+      totalRoasts: result.totalRoasts,
+      avgScore: Number(result.avgScore ?? 0),
     };
   }),
 
@@ -63,7 +63,7 @@ export const appRouter = createTRPCRouter({
       const analysis = await generateRoastAnalysis(
         input.code,
         input.language,
-        input.roastMode
+        input.roastMode,
       );
 
       const diff = generateDiff(input.code, analysis.suggestedCode);
@@ -90,7 +90,7 @@ export const appRouter = createTRPCRouter({
             title: item.title,
             description: item.description,
             order: index,
-          }))
+          })),
         );
       }
 

@@ -26,10 +26,18 @@ export function CodeBlock({
   };
 
   useEffect(() => {
-    highlight(document.documentElement.classList.contains("dark") ? "vesper" : "github-light");
+    highlight(
+      document.documentElement.classList.contains("dark")
+        ? "vesper"
+        : "github-light",
+    );
 
     const observer = new MutationObserver(() => {
-      highlight(document.documentElement.classList.contains("dark") ? "vesper" : "github-light");
+      highlight(
+        document.documentElement.classList.contains("dark")
+          ? "vesper"
+          : "github-light",
+      );
     });
 
     observer.observe(document.documentElement, {

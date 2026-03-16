@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";
 import { useTheme } from "@/components/theme-provider";
 
@@ -24,12 +24,7 @@ const langMap: Record<string, string> = {
 
 function ChevronIcon() {
   return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 10 10"
-      fill="none"
-    >
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
       <path
         d="M3.5 9L7.5 5L3.5 1"
         stroke="currentColor"
@@ -41,7 +36,11 @@ function ChevronIcon() {
   );
 }
 
-export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellProps) {
+export function LeaderboardCodeCell({
+  code,
+  language,
+  maxLines = 3,
+}: CodeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [html, setHtml] = useState("");
   const { theme } = useTheme();
@@ -51,9 +50,9 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
 
   useEffect(() => {
     const shikiTheme = theme === "dark" ? "vesper" : "github-light";
-    
+
     const codeToHighlight = isOpen ? code : lines.slice(0, maxLines).join("\n");
-    
+
     codeToHtml(codeToHighlight, { lang, theme: shikiTheme }).then(setHtml);
   }, [code, lang, isOpen, maxLines, lines, theme]);
 
@@ -92,10 +91,14 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
           onClick={() => setIsOpen(!isOpen)}
           className="group flex items-center gap-1 self-start rounded px-2 py-1 font-mono text-[11px] text-[var(--text-tertiary)] hover:bg-[var(--bg-surface)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--border-focus)]"
         >
-          <span className={`transition-transform duration-200 ease-out ${isOpen ? "rotate-90" : ""}`}>
+          <span
+            className={`transition-transform duration-200 ease-out ${isOpen ? "rotate-90" : ""}`}
+          >
             <ChevronIcon />
           </span>
-          {isOpen ? "show less" : `show ${hiddenLines} more line${hiddenLines > 1 ? "s" : ""}`}
+          {isOpen
+            ? "show less"
+            : `show ${hiddenLines} more line${hiddenLines > 1 ? "s" : ""}`}
         </button>
       )}
     </div>

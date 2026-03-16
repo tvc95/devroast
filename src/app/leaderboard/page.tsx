@@ -1,8 +1,8 @@
 "use client";
 
-import { trpc } from "@/trpc/client";
-import { LeaderboardList } from "@/components/leaderboard/leaderboard-client";
 import NumberFlow from "@number-flow/react";
+import { LeaderboardList } from "@/components/leaderboard/leaderboard-client";
+import { trpc } from "@/trpc/client";
 
 function LeaderboardStats() {
   const { data: stats } = trpc.getStats.useQuery();
@@ -11,11 +11,18 @@ function LeaderboardStats() {
     return (
       <div className="flex items-center gap-2">
         <span className="font-mono text-xs text-[var(--text-tertiary)]">
-          <span className="inline-block w-12 animate-pulse rounded bg-[var(--text-tertiary)]/20">0000</span> submissions
+          <span className="inline-block w-12 animate-pulse rounded bg-[var(--text-tertiary)]/20">
+            0000
+          </span>{" "}
+          submissions
         </span>
         <span className="font-mono text-xs text-[var(--text-tertiary)]">·</span>
         <span className="font-mono text-xs text-[var(--text-tertiary)]">
-          avg score: <span className="inline-block w-8 animate-pulse rounded bg-[var(--text-tertiary)]/20">0.0</span>/10
+          avg score:{" "}
+          <span className="inline-block w-8 animate-pulse rounded bg-[var(--text-tertiary)]/20">
+            0.0
+          </span>
+          /10
         </span>
       </div>
     );

@@ -70,7 +70,15 @@ export const ScoreRing = forwardRef<HTMLDivElement, ScoreRingProps>(
 
 ScoreRing.displayName = "ScoreRing";
 
-function ScoreCenter({ score, maxScore, size = "lg" }: { score: number; maxScore: number; size?: "sm" | "md" | "lg" }) {
+function ScoreCenter({
+  score,
+  maxScore,
+  size = "lg",
+}: {
+  score: number;
+  maxScore: number;
+  size?: "sm" | "md" | "lg";
+}) {
   const textSize = {
     sm: "text-3xl",
     md: "text-5xl md:text-4xl",
@@ -85,10 +93,14 @@ function ScoreCenter({ score, maxScore, size = "lg" }: { score: number; maxScore
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center">
-      <span className={`font-mono font-bold leading-none text-[var(--text-primary)] ${textSize}`}>
+      <span
+        className={`font-mono font-bold leading-none text-[var(--text-primary)] ${textSize}`}
+      >
         {score.toFixed(1)}
       </span>
-      <span className={`font-mono font-normal leading-none text-[var(--text-tertiary)] ${labelSize}`}>
+      <span
+        className={`font-mono font-normal leading-none text-[var(--text-tertiary)] ${labelSize}`}
+      >
         /{maxScore}
       </span>
     </div>

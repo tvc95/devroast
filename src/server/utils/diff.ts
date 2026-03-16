@@ -1,4 +1,4 @@
-import { diffLines, Change } from "diff";
+import { type Change, diffLines } from "diff";
 
 export function generateDiff(original: string, suggested: string): string {
   if (!suggested || suggested.trim() === "") {
@@ -11,7 +11,7 @@ export function generateDiff(original: string, suggested: string): string {
 
   for (const change of changes) {
     const lines = change.value.split("\n");
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (i === lines.length - 1 && line === "") {

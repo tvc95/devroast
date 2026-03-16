@@ -1,10 +1,13 @@
 import "server-only";
 
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 import { cache } from "react";
+import { createCallerFactory, createTRPCContext } from "@/server";
 import { appRouter } from "@/server/router";
-import { createTRPCContext, createCallerFactory } from "@/server";
-import { QueryClient } from "@tanstack/react-query";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 function makeQueryClient() {
   return new QueryClient({

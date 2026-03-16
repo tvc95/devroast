@@ -1,7 +1,7 @@
 import { FooterStats } from "@/components/home/footer-stats";
 import { FooterStatsContent } from "@/components/home/footer-stats-content";
-import { LeaderboardPreview } from "@/components/home/leaderboard-preview-client";
 import { HomeInteractive } from "@/components/home/home-interactive";
+import { LeaderboardPreview } from "@/components/home/leaderboard-preview-client";
 
 export const dynamic = "force-dynamic";
 

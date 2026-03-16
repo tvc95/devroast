@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { codeToHtml } from "shiki";
 
 interface CodeCellProps {
@@ -21,7 +21,11 @@ const langMap: Record<string, string> = {
   Rust: "rust",
 };
 
-export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellProps) {
+export function LeaderboardCodeCell({
+  code,
+  language,
+  maxLines = 10,
+}: CodeCellProps) {
   const [html, setHtml] = useState("");
   const lang = langMap[language] || "javascript";
 
@@ -49,7 +53,9 @@ export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellP
     let cancelled = false;
 
     const getTheme = () =>
-      document.documentElement.classList.contains("dark") ? "vesper" : "github-light";
+      document.documentElement.classList.contains("dark")
+        ? "vesper"
+        : "github-light";
 
     const run = async (theme: string) => {
       const result = await codeToHtml(visibleCode, { lang, theme });
@@ -77,7 +83,10 @@ export function LeaderboardCodeCell({ code, language, maxLines = 10 }: CodeCellP
     <div className="flex w-full min-w-0 overflow-hidden rounded bg-[var(--bg-surface)]">
       <div className="flex w-10 flex-shrink-0 flex-col items-end border-r border-[var(--border-primary)] px-2 py-2">
         {visibleLines.map((_, i) => (
-          <span key={i} className="font-mono text-[11px] leading-6 text-[var(--text-tertiary)]">
+          <span
+            key={i}
+            className="font-mono text-[11px] leading-6 text-[var(--text-tertiary)]"
+          >
             {i + 1}
           </span>
         ))}

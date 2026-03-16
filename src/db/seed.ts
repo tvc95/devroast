@@ -1,18 +1,20 @@
-import { config } from "dotenv"
-config({ path: "../../../.env.local" })
+import { config } from "dotenv";
 
-const databaseUrl = process.env.DATABASE_URL
+config({ path: "../../../.env.local" });
+
+const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL is not set")
+  throw new Error("DATABASE_URL is not set");
 }
 
-import { faker } from "@faker-js/faker"
-import { drizzle } from "drizzle-orm/node-postgres"
+import { faker } from "@faker-js/faker";
+import { drizzle } from "drizzle-orm/node-postgres";
 
 export const db = drizzle(databaseUrl, {
   casing: "snake_case",
-})
-import { roasts, analysisItems } from "./schema"
+});
+
+import { analysisItems, roasts } from "./schema";
 
 const VERDICTS = [
   "needs_serious_help",
@@ -20,9 +22,9 @@ const VERDICTS = [
   "decent_code",
   "solid_work",
   "exceptional",
-] as const
+] as const;
 
-const SEVERITIES = ["critical", "warning", "good"] as const
+const SEVERITIES = ["critical", "warning", "good"] as const;
 
 const LANGUAGES = [
   "javascript",
@@ -35,7 +37,7 @@ const LANGUAGES = [
   "cpp",
   "ruby",
   "php",
-] as const
+] as const;
 
 const CODE_TEMPLATES = [
   `function add(a, b) { return a + b; }`,
@@ -48,7 +50,7 @@ const CODE_TEMPLATES = [
   `try { doSomething(); } catch (e) { console.error(e); }`,
   `export default function App() { return <div>Hello</div>; }`,
   `const [state, setState] = useState(null);`,
-]
+];
 
 const ROAST_QUOTES = [
   "This code is so bad, even your mother wouldn't approve it.",
@@ -61,7 +63,7 @@ const ROAST_QUOTES = [
   "Your linter just cried a little.",
   "This code has more bugs than a summer picnic.",
   "Congratulations, you invented a new circle of hell.",
-]
+];
 
 const ANALYSIS_TITLES = [
   "Missing error handling",
@@ -74,25 +76,27 @@ const ANALYSIS_TITLES = [
   "Code duplication",
   "Poor naming convention",
   "Missing documentation",
-]
+];
 
 function randomElement<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function generateRoastData() {
-  const score = parseFloat(faker.number.float({ min: 0, max: 10, fractionDigits: 1 }).toFixed(1))
-  const lineCount = faker.number.int({ min: 1, max: 100 })
-  const language = randomElement(LANGUAGES)
-  const roastMode = Math.random() > 0.3
-  const code = randomElement(CODE_TEMPLATES)
+  const score = parseFloat(
+    faker.number.float({ min: 0, max: 10, fractionDigits: 1 }).toFixed(1),
+  );
+  const lineCount = faker.number.int({ min: 1, max: 100 });
+  const language = randomElement(LANGUAGES);
+  const roastMode = Math.random() > 0.3;
+  const code = randomElement(CODE_TEMPLATES);
 
-  let verdict: (typeof VERDICTS)[number]
-  if (score <= 2) verdict = "needs_serious_help"
-  else if (score <= 4) verdict = "rough_around_edges"
-  else if (score <= 6) verdict = "decent_code"
-  else if (score <= 8) verdict = "solid_work"
-  else verdict = "exceptional"
+  let verdict: (typeof VERDICTS)[number];
+  if (score <= 2) verdict = "needs_serious_help";
+  else if (score <= 4) verdict = "rough_around_edges";
+  else if (score <= 6) verdict = "decent_code";
+  else if (score <= 8) verdict = "solid_work";
+  else verdict = "exceptional";
 
   return {
     code,
@@ -104,22 +108,24 @@ function generateRoastData() {
     roastQuote: roastMode ? randomElement(ROAST_QUOTES) : null,
     suggestedFix: null,
     createdAt: faker.date.past({ years: 1 }),
-  }
+  };
 }
 
 function generateAnalysisItems(roastId: string, score: number) {
-  const itemCount = faker.number.int({ min: 2, max: 6 })
-  const items = []
+  const itemCount = faker.number.int({ min: 2, max: 6 });
+  const items = [];
 
   for (let i = 0; i < itemCount; i++) {
-    let severity: (typeof SEVERITIES)[number]
+    let severity: (typeof SEVERITIES)[number];
 
     if (score <= 4) {
-      severity = Math.random() > 0.3 ? randomElement(["critical", "warning"]) : "good"
+      severity =
+        Math.random() > 0.3 ? randomElement(["critical", "warning"]) : "good";
     } else if (score <= 7) {
-      severity = Math.random() > 0.5 ? "warning" : randomElement(["critical", "good"])
+      severity =
+        Math.random() > 0.5 ? "warning" : randomElement(["critical", "good"]);
     } else {
-      severity = Math.random() > 0.6 ? "good" : "warning"
+      severity = Math.random() > 0.6 ? "good" : "warning";
     }
 
     items.push({
@@ -129,46 +135,46 @@ function generateAnalysisItems(roastId: string, score: number) {
       title: randomElement(ANALYSIS_TITLES),
       description: faker.lorem.sentence(),
       order: i,
-    })
+    });
   }
 
-  return items
+  return items;
 }
 
 async function seed() {
-  console.log("🌱 Starting seed...")
+  console.log("🌱 Starting seed...");
 
-  const roastCount = 100
-  const allRoasts = []
-  const allAnalysisItems = []
+  const roastCount = 100;
+  const allRoasts = [];
+  const allAnalysisItems = [];
 
   for (let i = 0; i < roastCount; i++) {
-    const roastData = generateRoastData()
-    const roastId = faker.string.uuid()
+    const roastData = generateRoastData();
+    const roastId = faker.string.uuid();
 
     allRoasts.push({
       id: roastId,
       ...roastData,
-    })
+    });
 
-    const items = generateAnalysisItems(roastId, roastData.score)
-    allAnalysisItems.push(...items)
+    const items = generateAnalysisItems(roastId, roastData.score);
+    allAnalysisItems.push(...items);
   }
 
-  console.log(`📝 Inserting ${allRoasts.length} roasts...`)
-  await db.insert(roasts).values(allRoasts)
+  console.log(`📝 Inserting ${allRoasts.length} roasts...`);
+  await db.insert(roasts).values(allRoasts);
 
-  console.log(`📝 Inserting ${allAnalysisItems.length} analysis items...`)
-  await db.insert(analysisItems).values(allAnalysisItems)
+  console.log(`📝 Inserting ${allAnalysisItems.length} analysis items...`);
+  await db.insert(analysisItems).values(allAnalysisItems);
 
-  console.log("✅ Seed completed!")
+  console.log("✅ Seed completed!");
 }
 
 seed()
   .catch((error) => {
-    console.error("❌ Seed failed:", error)
-    process.exit(1)
+    console.error("❌ Seed failed:", error);
+    process.exit(1);
   })
   .finally(() => {
-    process.exit(0)
-  })
+    process.exit(0);
+  });

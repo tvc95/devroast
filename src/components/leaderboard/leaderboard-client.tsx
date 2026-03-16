@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
 import Link from "next/link";
-import { trpc } from "@/trpc/client";
+import { Suspense } from "react";
 import { LeaderboardCodeCell } from "@/components/leaderboard/leaderboard-code-cell";
+import { trpc } from "@/trpc/client";
 
 function LeaderboardSkeleton() {
   return (
@@ -31,8 +31,12 @@ function LeaderboardSkeleton() {
 }
 
 function LeaderboardContent() {
-  const { data: leaderboard, isLoading: loadingLeaderboard } = trpc.getFullLeaderboard.useQuery(undefined, { staleTime: 3600000 });
-  const { data: stats, isLoading: loadingStats } = trpc.getStats.useQuery(undefined, { staleTime: 3600000 });
+  const { data: leaderboard, isLoading: loadingLeaderboard } =
+    trpc.getFullLeaderboard.useQuery(undefined, { staleTime: 3600000 });
+  const { data: stats, isLoading: loadingStats } = trpc.getStats.useQuery(
+    undefined,
+    { staleTime: 3600000 },
+  );
 
   const isLoading = loadingLeaderboard || loadingStats;
 
@@ -62,14 +66,20 @@ function LeaderboardContent() {
               </span>
               <span className="font-mono text-xs text-[var(--text-tertiary)]">
                 score:{" "}
-                <span className="text-[var(--accent-red)]">{entry.score.toFixed(1)}</span>
+                <span className="text-[var(--accent-red)]">
+                  {entry.score.toFixed(1)}
+                </span>
                 /10
               </span>
             </div>
           </div>
 
           <div className="p-4">
-            <LeaderboardCodeCell code={entry.code} language={entry.language} maxLines={10} />
+            <LeaderboardCodeCell
+              code={entry.code}
+              language={entry.language}
+              maxLines={10}
+            />
           </div>
         </Link>
       ))}
