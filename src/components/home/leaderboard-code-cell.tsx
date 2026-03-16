@@ -78,12 +78,13 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
           {lines.slice(0, isOpen ? lines.length : maxLines).map((_, i) => (
             <span
               key={i}
-              className="font-mono text-[11px] leading-5 text-[var(--text-tertiary)]"
+              className="font-mono text-[11px] leading-6 text-[var(--text-tertiary)]"
             >
               {i + 1}
             </span>
           ))}
         </div>
+
         <div className="flex-1 overflow-x-auto px-3 py-2">
           {html ? (
             <div
@@ -91,7 +92,7 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
               dangerouslySetInnerHTML={{ __html: html }}
             />
           ) : (
-            <pre className="font-mono text-[11px] leading-5 text-[var(--text-primary)] whitespace-pre-wrap">
+            <pre className="font-mono text-[11px] text-[var(--text-primary)] whitespace-pre-wrap">
               {isOpen ? code : lines.slice(0, maxLines).join("\n")}
             </pre>
           )}
