@@ -42,32 +42,23 @@ function ChevronIcon() {
 
 export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [html, setHtml] = useState("");
+  const [darkHtml, setDarkHtml] = useState("");
+  const [lightHtml, setLightHtml] = useState("");
   const lang = langMap[language] || "javascript";
   const lines = code.split("\n");
   const hasMoreLines = lines.length > maxLines;
 
+  const codeToHighlight = isOpen ? code : lines.slice(0, maxLines).join("\n");
+
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    const theme = isDark ? "vesper" : "github-light";
-    
-    const codeToHighlight = isOpen ? code : lines.slice(0, maxLines).join("\n");
-    
-    codeToHtml(codeToHighlight, { lang, theme }).then(setHtml);
-
-    const observer = new MutationObserver(() => {
-      const updatedIsDark = document.documentElement.classList.contains("dark");
-      const updatedTheme = updatedIsDark ? "vesper" : "github-light";
-      codeToHtml(codeToHighlight, { lang, theme: updatedTheme }).then(setHtml);
+    Promise.all([
+      codeToHtml(codeToHighlight, { lang, theme: "vesper" }),
+      codeToHtml(codeToHighlight, { lang, theme: "github-light" }),
+    ]).then(([dark, light]) => {
+      setDarkHtml(dark);
+      setLightHtml(light);
     });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, [code, lang, isOpen, maxLines, lines]);
+  }, [codeToHighlight, lang]);
 
   const hiddenLines = lines.length - maxLines;
 
@@ -85,17 +76,19 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
           ))}
         </div>
 
-        <div className="flex-1 overflow-x-auto px-3 py-2">
-          {html ? (
+        <div className="relative flex-1 overflow-x-auto px-3 py-2">
+          <div className="dark:[&_pre]:!bg-transparent dark:[&_pre]:!p-0 dark:[&_code]:!font-mono dark:[&_code]:!text-[11px] dark:[&_code]:!leading-5">
             <div
-              className="[&_pre]:!bg-transparent [&_pre]:!p-0 [&_code]:!font-mono [&_code]:!text-[11px] [&_code]:!leading-5"
-              dangerouslySetInnerHTML={{ __html: html }}
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 overflow-visible whitespace-pre font-mono text-[11px] leading-5 opacity-0 dark:opacity-100 transition-opacity"
+              dangerouslySetInnerHTML={{ __html: darkHtml }}
             />
-          ) : (
-            <pre className="font-mono text-[11px] text-[var(--text-primary)] whitespace-pre-wrap">
-              {isOpen ? code : lines.slice(0, maxLines).join("\n")}
-            </pre>
-          )}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 overflow-visible whitespace-pre font-mono text-[11px] leading-5 opacity-100 dark:opacity-0 transition-opacity"
+              dangerouslySetInnerHTML={{ __html: lightHtml }}
+            />
+          </div>
         </div>
       </div>
 
