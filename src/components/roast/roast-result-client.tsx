@@ -1,31 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { trpc } from "@/trpc/client";
 import { CodeBlock } from "@/app/leaderboard/code-block";
 import { ScoreRing } from "@/components/ui/score-ring";
-import { trpc } from "@/trpc/client";
-
-function parseDiff(
-  diffString: string,
-): Array<{ type: string; content: string }> {
-  if (!diffString) return [];
-
-  const lines = diffString.split("\n");
-  const result: Array<{ type: string; content: string }> = [];
-
-  for (const line of lines) {
-    if (line.startsWith("+ ") && !line.startsWith("+++")) {
-      result.push({ type: "added", content: line.slice(2) });
-    } else if (line.startsWith("- ") && !line.startsWith("---")) {
-      result.push({ type: "removed", content: line.slice(2) });
-    } else if (line.startsWith("```diff") || line.startsWith("```")) {
-    } else if (line.trim()) {
-      result.push({ type: "context", content: line });
-    }
-  }
-
-  return result;
-}
+import { parseDiff, type DiffLine } from "@/lib/diff";
 
 function IssueCard({
   issue,
@@ -50,13 +29,10 @@ function IssueCard({
     },
   };
 
-  const style =
-    typeStyles[issue.severity as keyof typeof typeStyles] || typeStyles.warning;
+  const style = typeStyles[issue.severity as keyof typeof typeStyles] || typeStyles.warning;
 
   return (
-    <div
-      className={`flex flex-col gap-3 rounded-sm border bg-[var(--bg-surface)] p-5 ${style.border}`}
-    >
+    <div className={`flex flex-col gap-3 rounded-sm border bg-[var(--bg-surface)] p-5 ${style.border}`}>
       <div className="flex items-center gap-2">
         <div className={`h-2 w-2 rounded-full ${style.dot}`} />
         <span className={`font-mono text-[13px] font-medium ${style.title}`}>
@@ -97,50 +73,44 @@ function DiffBlock({
         </span>
       </div>
       <div className="flex flex-col">
-        {parsedDiff.map((line, index) => {
-          if (line.type === "context") {
-            return (
-              <div key={index} className="flex font-mono text-[12px]">
-                <span className="w-5 flex-shrink-0 px-4 py-0.5 text-[var(--text-tertiary)]" />
-                <span className="flex-1 px-4 py-0.5 text-[var(--text-primary)]">
-                  {line.content}
-                </span>
-              </div>
-            );
+        {parsedDiff.map((line: DiffLine, index) => {
+          switch (line.type) {
+            case "context":
+              return (
+                <div key={index} className="flex font-mono text-[12px]">
+                  <span className="w-5 flex-shrink-0 px-4 py-0.5 text-[var(--text-tertiary)]" />
+                  <span className="flex-1 px-4 py-0.5 text-[var(--text-primary)]">
+                    {line.content}
+                  </span>
+                </div>
+              );
+            case "removed":
+              return (
+                <div
+                  key={index}
+                  className="flex font-mono text-[12px]"
+                  style={{ backgroundColor: "rgba(239, 68, 68, 0.08)" }}
+                >
+                  <span className="w-5 flex-shrink-0 px-4 py-0.5 text-[var(--accent-red)]">- </span>
+                  <span className="flex-1 px-4 py-0.5 text-[var(--accent-red)]">
+                    {line.content}
+                  </span>
+                </div>
+              );
+            case "added":
+              return (
+                <div
+                  key={index}
+                  className="flex font-mono text-[12px]"
+                  style={{ backgroundColor: "rgba(16, 185, 129, 0.08)" }}
+                >
+                  <span className="w-5 flex-shrink-0 px-4 py-0.5 text-[var(--accent-green)]">+ </span>
+                  <span className="flex-1 px-4 py-0.5 text-[var(--accent-green)]">
+                    {line.content}
+                  </span>
+                </div>
+              );
           }
-          if (line.type === "removed") {
-            return (
-              <div
-                key={index}
-                className="flex font-mono text-[12px]"
-                style={{ backgroundColor: "rgba(239, 68, 68, 0.08)" }}
-              >
-                <span className="w-5 flex-shrink-0 px-4 py-0.5 text-[var(--accent-red)]">
-                  -{" "}
-                </span>
-                <span className="flex-1 px-4 py-0.5 text-[var(--accent-red)]">
-                  {line.content}
-                </span>
-              </div>
-            );
-          }
-          if (line.type === "added") {
-            return (
-              <div
-                key={index}
-                className="flex font-mono text-[12px]"
-                style={{ backgroundColor: "rgba(16, 185, 129, 0.08)" }}
-              >
-                <span className="w-5 flex-shrink-0 px-4 py-0.5 text-[var(--accent-green)]">
-                  +{" "}
-                </span>
-                <span className="flex-1 px-4 py-0.5 text-[var(--accent-green)]">
-                  {line.content}
-                </span>
-              </div>
-            );
-          }
-          return null;
         })}
       </div>
     </div>
@@ -209,9 +179,7 @@ export function RoastResultClient({ id }: { id: string }) {
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-[var(--accent-red)]" />
-              <span
-                className={`font-mono text-[13px] font-medium ${verdictColor}`}
-              >
+              <span className={`font-mono text-[13px] font-medium ${verdictColor}`}>
                 verdict: {roast.verdict}
               </span>
             </div>
@@ -294,10 +262,7 @@ export function RoastResultClient({ id }: { id: string }) {
             </span>
           </div>
 
-          <DiffBlock
-            suggestedFix={roast.suggestedFix || ""}
-            language={roast.language}
-          />
+          <DiffBlock suggestedFix={roast.suggestedFix || ""} language={roast.language} />
         </div>
       </div>
     </main>
