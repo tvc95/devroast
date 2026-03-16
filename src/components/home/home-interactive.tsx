@@ -56,6 +56,25 @@ export function HomeInteractive() {
           {createRoast.isPending ? "$ roasting..." : "$ roast_my_code"}
         </ActionsBarSubmit>
       </ActionsBar>
+
+      {createRoast.isError && (
+        <div className="flex w-[780px] items-center justify-between rounded border border-[var(--accent-red)]/30 bg-[var(--accent-red)]/5 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 flex-shrink-0 rounded-full bg-[var(--accent-red)]" />
+            <span className="font-mono text-[12px] text-[var(--accent-red)]">
+              // roast failed — {createRoast.error?.message ?? "unexpected error, try again"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => createRoast.reset()}
+            className="ml-4 font-mono text-[11px] text-[var(--text-tertiary)] transition-colors hover:text-[var(--accent-red)]"
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </>
   );
 }
