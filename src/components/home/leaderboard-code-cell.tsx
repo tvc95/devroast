@@ -54,19 +54,6 @@ export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellPr
     const codeToHighlight = isOpen ? code : lines.slice(0, maxLines).join("\n");
     
     codeToHtml(codeToHighlight, { lang, theme }).then(setHtml);
-
-    const observer = new MutationObserver(() => {
-      const updatedIsDark = document.documentElement.classList.contains("dark");
-      const updatedTheme = updatedIsDark ? "vesper" : "github-light";
-      codeToHtml(codeToHighlight, { lang, theme: updatedTheme }).then(setHtml);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
   }, [code, lang, isOpen, maxLines, lines]);
 
   const hiddenLines = lines.length - maxLines;
