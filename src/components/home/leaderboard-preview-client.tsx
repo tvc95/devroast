@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense } from "react";
-import { LeaderboardCodeCell } from "@/components/home/leaderboard-code-cell";
+import Link from "next/link";
+import { trpc } from "@/trpc/client";
 import {
   Leaderboard,
   LeaderboardCell,
@@ -10,7 +10,7 @@ import {
   LeaderboardHeader,
   LeaderboardRow,
 } from "@/components/home/leaderboard-preview";
-import { trpc } from "@/trpc/client";
+import { LeaderboardCodeCell } from "@/components/home/leaderboard-code-cell";
 
 function LeaderboardSkeleton() {
   return (
@@ -43,12 +43,8 @@ function LeaderboardSkeleton() {
 }
 
 function LeaderboardContent() {
-  const { data: leaderboard } = trpc.getLeaderboard.useQuery(undefined, {
-    staleTime: 3600000,
-  });
-  const { data: stats } = trpc.getStats.useQuery(undefined, {
-    staleTime: 3600000,
-  });
+  const { data: leaderboard } = trpc.getLeaderboard.useQuery({ limit: 3 }, { staleTime: 3600000 });
+  const { data: stats } = trpc.getStats.useQuery(undefined, { staleTime: 3600000 });
 
   if (!leaderboard || !stats) {
     return <LeaderboardSkeleton />;

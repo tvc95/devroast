@@ -1,9 +1,9 @@
-import { asc, avg, count, eq } from "drizzle-orm";
-import { z } from "zod";
+import { createTRPCRouter, baseProcedure } from "./index";
 import { db } from "@/db";
-import { analysisItems, roasts } from "@/db/schema";
+import { roasts, analysisItems } from "@/db/schema";
+import { eq, asc, count, avg } from "drizzle-orm";
+import { z } from "zod";
 import { generateRoastAnalysis } from "./analysis";
-import { baseProcedure, createTRPCRouter } from "./index";
 import { generateDiff } from "./utils/diff";
 
 const createRoastInput = z.object({
@@ -27,35 +27,22 @@ export const appRouter = createTRPCRouter({
     };
   }),
 
-  getLeaderboard: baseProcedure.query(async () => {
-    const results = await db
-      .select()
-      .from(roasts)
-      .orderBy(asc(roasts.score))
-      .limit(3);
+  getLeaderboard: baseProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(50).default(20) }))
+    .query(async ({ input }) => {
+      const results = await db
+        .select()
+        .from(roasts)
+        .orderBy(asc(roasts.score))
+        .limit(input.limit);
 
-    return results.map((row) => ({
-      id: row.id,
-      score: row.score,
-      language: row.language,
-      code: row.code,
-    }));
-  }),
-
-  getFullLeaderboard: baseProcedure.query(async () => {
-    const results = await db
-      .select()
-      .from(roasts)
-      .orderBy(asc(roasts.score))
-      .limit(20);
-
-    return results.map((row) => ({
-      id: row.id,
-      score: row.score,
-      language: row.language,
-      code: row.code,
-    }));
-  }),
+      return results.map((row) => ({
+        id: row.id,
+        score: row.score,
+        language: row.language,
+        code: row.code,
+      }));
+    }),
 
   createRoast: baseProcedure
     .input(createRoastInput)
@@ -63,7 +50,7 @@ export const appRouter = createTRPCRouter({
       const analysis = await generateRoastAnalysis(
         input.code,
         input.language,
-        input.roastMode,
+        input.roastMode
       );
 
       const diff = generateDiff(input.code, analysis.suggestedCode);
@@ -90,7 +77,7 @@ export const appRouter = createTRPCRouter({
             title: item.title,
             description: item.description,
             order: index,
-          })),
+          }))
         );
       }
 
