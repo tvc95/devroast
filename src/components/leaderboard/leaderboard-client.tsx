@@ -31,8 +31,8 @@ function LeaderboardSkeleton() {
 }
 
 function LeaderboardContent() {
-  const { data: leaderboard, isLoading: loadingLeaderboard } = trpc.getFullLeaderboard.useQuery();
-  const { data: stats, isLoading: loadingStats } = trpc.getStats.useQuery();
+  const { data: leaderboard, isLoading: loadingLeaderboard } = trpc.getFullLeaderboard.useQuery(undefined, { staleTime: 3600000 });
+  const { data: stats, isLoading: loadingStats } = trpc.getStats.useQuery(undefined, { staleTime: 3600000 });
 
   const isLoading = loadingLeaderboard || loadingStats;
 

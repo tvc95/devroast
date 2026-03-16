@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { codeToHtml } from "shiki";
+import { useTheme } from "@/components/theme-provider";
 
 interface CodeCellProps {
   code: string;
@@ -43,18 +44,18 @@ function ChevronIcon() {
 export function LeaderboardCodeCell({ code, language, maxLines = 3 }: CodeCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [html, setHtml] = useState("");
+  const { theme } = useTheme();
   const lang = langMap[language] || "javascript";
   const lines = code.split("\n");
   const hasMoreLines = lines.length > maxLines;
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    const theme = isDark ? "vesper" : "github-light";
+    const shikiTheme = theme === "dark" ? "vesper" : "github-light";
     
     const codeToHighlight = isOpen ? code : lines.slice(0, maxLines).join("\n");
     
-    codeToHtml(codeToHighlight, { lang, theme }).then(setHtml);
-  }, [code, lang, isOpen, maxLines, lines]);
+    codeToHtml(codeToHighlight, { lang, theme: shikiTheme }).then(setHtml);
+  }, [code, lang, isOpen, maxLines, lines, theme]);
 
   const hiddenLines = lines.length - maxLines;
 
