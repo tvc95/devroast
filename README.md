@@ -4,6 +4,10 @@
 
 DevRoast is a fullstack web application where you submit code and receive AI-powered feedback, either constructive or brutally sarcastic, depending on your bravery. Every roast is scored and ranked on a public leaderboard of shame.
 
+
+https://github.com/user-attachments/assets/7edae32b-4a06-4787-90fb-1e958ad76807
+
+
 Built during the **NLW Operator** event by **Rocketseat**.
 
 ## ✨ Features
