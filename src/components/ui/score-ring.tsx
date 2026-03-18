@@ -82,7 +82,7 @@ function ScoreCenter({
   const textSize = {
     sm: "text-3xl",
     md: "text-5xl md:text-4xl",
-    lg: "text-5xl lg:text-6x1",
+    lg: "text-5xl lg:text-6xl",
   }[size];
 
   const labelSize = {
