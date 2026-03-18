@@ -8,7 +8,7 @@ const scoreRing = tv(
       size: {
         sm: ["h-24 w-24"],
         md: ["h-[180px] w-[180px]"],
-        lg: ["h-64 w-64"],
+        lg: ["h-48 w-48"],
       },
     },
     defaultVariants: {

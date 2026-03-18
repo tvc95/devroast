@@ -173,8 +173,10 @@ export function RoastResultClient({ id }: { id: string }) {
     <main className="flex min-h-screen flex-col bg-[var(--bg-page)]">
       <div className="flex flex-col gap-10 px-20 py-10">
         {/* Score Hero */}
-        <div className="flex flex-col items-center gap-12 sm:flex-row sm:justify-center sm:gap-12">
-          <ScoreRing score={roast.score} size="lg" />
+        <div className="grid grid-cols-[25%_1fr] items-center gap-8">
+          <div className="flex justify-center">
+            <ScoreRing score={roast.score} size="lg" />
+          </div>
 
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
